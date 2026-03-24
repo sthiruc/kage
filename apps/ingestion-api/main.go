@@ -16,11 +16,21 @@ func main() {
 
 	rdb := ConnectRedis(cfg.RedisAddr)
 
+	rabbitConn := ConnectRabbitMQ(cfg.RabbitMQURL)
+	defer rabbitConn.Close()
+
+	rabbitCh := OpenChannel(rabbitConn)
+	defer rabbitCh.Close()
+
+	DeclareQueue(rabbitCh, cfg.QueueName)
+
 	r := chi.NewRouter()
 
-	r.Get("/health", HealthHandler(db, rdb))
-	r.Post("/api/v1/logs", CreateLogHandler(db))
+	r.Get("/health", HealthHandler(db, rdb, rabbitConn))
+	r.Post("/api/v1/logs", CreateLogHandler(rabbitCh, cfg.QueueName))
 
 	log.Println("ingestion-api running on :8080")
-	http.ListenAndServe(":8080", r)
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
 }

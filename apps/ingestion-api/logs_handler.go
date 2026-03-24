@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func CreateLogHandler(db *pgx.Conn) http.HandlerFunc {
+func CreateLogHandler(ch *amqp.Channel, queueName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var logReq Log
 
@@ -19,12 +19,15 @@ func CreateLogHandler(db *pgx.Conn) http.HandlerFunc {
 
 		logReq.ID = uuid.New().String()
 
-		if err := InsertLog(db, logReq); err != nil {
-			http.Error(w, "failed to insert log", http.StatusInternalServerError)
+		if err := PublishLog(ch, queueName, logReq); err != nil {
+			http.Error(w, "failed to publish log", http.StatusInternalServerError)
 			return
 		}
 
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(logReq)
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "accepted",
+			"log_id": logReq.ID,
+		})
 	}
 }

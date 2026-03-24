@@ -19,6 +19,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Get("/health", HealthHandler(db, rdb))
+	r.Post("/api/v1/logs", CreateLogHandler(db))
 
 	log.Println("ingestion-api running on :8080")
 	http.ListenAndServe(":8080", r)

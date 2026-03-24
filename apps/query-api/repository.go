@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -12,6 +13,8 @@ import (
 type LogFilters struct {
 	ServiceName string
 	Level       string
+	Start       *time.Time
+	End         *time.Time
 	Limit       int
 	Offset      int
 }
@@ -48,6 +51,18 @@ func GetLogs(db *pgx.Conn, filters LogFilters) ([]Log, error) {
 	if filters.Level != "" {
 		conditions = append(conditions, "level = $"+strconv.Itoa(argPos))
 		args = append(args, filters.Level)
+		argPos++
+	}
+
+	if filters.Start != nil {
+		conditions = append(conditions, "timestamp >= $"+strconv.Itoa(argPos))
+		args = append(args, *filters.Start)
+		argPos++
+	}
+
+	if filters.End != nil {
+		conditions = append(conditions, "timestamp <= $"+strconv.Itoa(argPos))
+		args = append(args, *filters.End)
 		argPos++
 	}
 

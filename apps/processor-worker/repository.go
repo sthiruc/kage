@@ -19,6 +19,7 @@ func InsertLog(db *pgx.Conn, logRecord Log) error {
 		metadata
 	)
 	VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+	ON CONFLICT (id) DO NOTHING
 	`
 
 	_, err := db.Exec(context.Background(), query,

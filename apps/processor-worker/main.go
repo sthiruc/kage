@@ -11,6 +11,9 @@ func main() {
 	db := ConnectDB(cfg.PostgresURL)
 	defer db.Close(context.Background())
 
+	rdb := ConnectRedis(cfg.RedisAddr)
+	defer rdb.Close()
+
 	rabbitConn := ConnectRabbitMQ(cfg.RabbitMQURL)
 	defer rabbitConn.Close()
 
@@ -21,7 +24,14 @@ func main() {
 
 	log.Println("processor-worker started")
 
-	if err := StartConsumer(rabbitCh, db, cfg.QueueName); err != nil {
+	if err := StartConsumer(
+		rabbitCh,
+		db,
+		rdb,
+		cfg.QueueName,
+		cfg.ErrorSpikeThreshold,
+		cfg.ErrorSpikeWindowSec,
+	); err != nil {
 		log.Fatalf("consumer failed: %v", err)
 	}
 }

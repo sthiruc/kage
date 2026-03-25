@@ -6,9 +6,17 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
 )
 
-func StartConsumer(ch *amqp.Channel, db *pgx.Conn, queueName string) error {
+func StartConsumer(
+	ch *amqp.Channel,
+	db *pgx.Conn,
+	rdb *redis.Client,
+	queueName string,
+	errorSpikeThreshold int,
+	errorSpikeWindowSec int,
+) error {
 	msgs, err := ch.Consume(
 		queueName,
 		"",
@@ -35,6 +43,12 @@ func StartConsumer(ch *amqp.Channel, db *pgx.Conn, queueName string) error {
 
 		if err := InsertLog(db, logRecord); err != nil {
 			log.Printf("failed to insert log %s: %v", logRecord.ID, err)
+			_ = msg.Nack(false, true)
+			continue
+		}
+
+		if err := HandleIncidentDetection(db, rdb, logRecord, errorSpikeThreshold, errorSpikeWindowSec); err != nil {
+			log.Printf("failed incident detection for log %s: %v", logRecord.ID, err)
 			_ = msg.Nack(false, true)
 			continue
 		}

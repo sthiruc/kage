@@ -93,25 +93,25 @@
 
 ### Create Log
 
-    POST /api/v1/logs
+`POST /api/v1/logs`
 
 ### Example Request
-```
-curl -X POST http://localhost:8080/api/v1/logs \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "payment-service",
-    "service_name": "payments",
-    "environment": "dev",
-    "level": "ERROR",
-    "message": "database timeout",
-    "timestamp": "2026-03-25T12:00:00Z",
-    "metadata": {
-      "user_id": "123",
-      "route": "/charge"
+
+    curl -X POST http://localhost:8080/api/v1/logs \
+    -H "Content-Type: application/json" \
+    -d '{
+        "source": "payment-service",
+        "service_name": "payments",
+        "environment": "dev",
+        "level": "ERROR",
+        "message": "database timeout",
+        "timestamp": "2026-03-25T12:00:00Z",
+        "metadata": {
+        "user_id": "123",
+        "route": "/charge"
+        }
     }
-  }'
-```
+
 ### Response
 
     {
@@ -126,31 +126,31 @@ curl -X POST http://localhost:8080/api/v1/logs \
 
 ### Get Logs
 
-    GET /api/v1/logs
+`GET /api/v1/logs`
 
 ### Example Queries
 
 #### All logs
-`curl http://localhost:8081/api/v1/logs`
+    curl http://localhost:8081/api/v1/logs
 
 #### Filter by service
-`curl "http://localhost:8081/api/v1/logs?service_name=payments"`
+    curl "http://localhost:8081/api/v1/logs?service_name=payments"
 
 #### Filter by level
-`curl "http://localhost:8081/api/v1/logs?level=ERROR"`
+    curl "http://localhost:8081/api/v1/logs?level=ERROR"
 
 #### Time range
-`curl "http://localhost:8081/api/v1/logs?start=2026-03-25T12:00:00Z&end=2026-03-25T13:00:00Z"`
+    curl "http://localhost:8081/api/v1/logs?start=2026-03-25T12:00:00Z&end=2026-03-25T13:00:00Z"
 
 #### Combined
-`curl "http://localhost:8081/api/v1/logs?service_name=payments&level=ERROR&limit=10"`
+    curl "http://localhost:8081/api/v1/logs?service_name=payments&level=ERROR&limit=10"
 
 
 ⸻
 
 ## Get Log by ID
 
-    GET /api/v1/logs/{id}
+`GET /api/v1/logs/{id}`
 
     curl http://localhost:8081/api/v1/logs/<LOG_ID>
 
@@ -161,23 +161,23 @@ curl -X POST http://localhost:8080/api/v1/logs \
 
 ### Get Incidents
 
-    GET /api/v1/incidents
+`GET /api/v1/incidents`
 
 ### All incidents
-`curl http://localhost:8081/api/v1/incidents`
+    curl http://localhost:8081/api/v1/incidents
 
 ### Only open
-`curl "http://localhost:8081/api/v1/incidents?status=open"`
+    curl "http://localhost:8081/api/v1/incidents?status=open"
 
 ### By service
-`curl "http://localhost:8081/api/v1/incidents?service_name=payments"`
+    curl "http://localhost:8081/api/v1/incidents?service_name=payments"
 
 
 ⸻
 
 ## Get Incident by ID
 
-    GET /api/v1/incidents/{id}
+`GET /api/v1/incidents/{id}`
 
     curl http://localhost:8081/api/v1/incidents/<INCIDENT_ID>
 
@@ -186,7 +186,7 @@ curl -X POST http://localhost:8080/api/v1/logs \
 
 ## Acknowledge Incident
 
-    POST /api/v1/incidents/{id}/ack
+`POST /api/v1/incidents/{id}/ack`
 
     curl -X POST http://localhost:8081/api/v1/incidents/<ID>/ack
 
@@ -195,7 +195,7 @@ curl -X POST http://localhost:8080/api/v1/logs \
 
 ## Resolve Incident
 
-    POST /api/v1/incidents/{id}/resolve
+`POST /api/v1/incidents/{id}/resolve`
 
     curl -X POST http://localhost:8081/api/v1/incidents/<ID>/resolve
 

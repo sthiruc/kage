@@ -19,6 +19,8 @@ func main() {
 	r.Get("/health", HealthHandler(db))
 	r.Get("/api/v1/logs", GetLogsHandler(db))
 	r.Get("/api/v1/logs/{id}", GetLogByIDHandler(db))
+	r.Get("/api/v1/incidents", GetIncidentsHandler(db))
+	r.Get("/api/v1/incidents/{id}", GetIncidentByIDHandler(db))
 
 	addr := ":" + cfg.Port
 	log.Printf("query-api running on %s", addr)

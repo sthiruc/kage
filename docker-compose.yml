@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:16
@@ -44,6 +42,57 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+
+  ingestion-api:
+    build:
+      context: ./apps/ingestion-api
+    container_name: kage-ingestion-api
+    environment:
+      POSTGRES_URL: postgres://logging_user:logging_pass@postgres:5432/logging
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      QUEUE_NAME: logs_ingestion
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  processor-worker:
+    build:
+      context: ./apps/processor-worker
+    container_name: kage-processor-worker
+    environment:
+      POSTGRES_URL: postgres://logging_user:logging_pass@postgres:5432/logging
+      REDIS_ADDR: redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      QUEUE_NAME: logs_ingestion
+      ERROR_SPIKE_THRESHOLD: "5"
+      ERROR_SPIKE_WINDOW_SEC: "300"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  query-api:
+    build:
+      context: ./apps/query-api
+    container_name: kage-query-api
+    environment:
+      POSTGRES_URL: postgres://logging_user:logging_pass@postgres:5432/logging
+      PORT: "8081"
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:

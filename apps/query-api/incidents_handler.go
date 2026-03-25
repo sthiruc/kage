@@ -76,3 +76,61 @@ func GetIncidentByIDHandler(db *pgx.Conn) http.HandlerFunc {
 		json.NewEncoder(w).Encode(incident)
 	}
 }
+
+func AcknowledgeIncidentHandler(db *pgx.Conn) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		if id == "" {
+			http.Error(w, "missing id", http.StatusBadRequest)
+			return
+		}
+
+		err := AcknowledgeIncident(db, id)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				http.Error(w, "incident not found or not open", http.StatusNotFound)
+				return
+			}
+			http.Error(w, "failed to acknowledge incident", http.StatusInternalServerError)
+			return
+		}
+
+		incident, err := GetIncidentByID(db, id)
+		if err != nil {
+			http.Error(w, "incident acknowledged but failed to fetch updated record", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(incident)
+	}
+}
+
+func ResolveIncidentHandler(db *pgx.Conn) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		if id == "" {
+			http.Error(w, "missing id", http.StatusBadRequest)
+			return
+		}
+
+		err := ResolveIncident(db, id)
+		if err != nil {
+			if err == pgx.ErrNoRows {
+				http.Error(w, "incident not found or already resolved", http.StatusNotFound)
+				return
+			}
+			http.Error(w, "failed to resolve incident", http.StatusInternalServerError)
+			return
+		}
+
+		incident, err := GetIncidentByID(db, id)
+		if err != nil {
+			http.Error(w, "incident resolved but failed to fetch updated record", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(incident)
+	}
+}

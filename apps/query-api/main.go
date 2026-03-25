@@ -21,6 +21,8 @@ func main() {
 	r.Get("/api/v1/logs/{id}", GetLogByIDHandler(db))
 	r.Get("/api/v1/incidents", GetIncidentsHandler(db))
 	r.Get("/api/v1/incidents/{id}", GetIncidentByIDHandler(db))
+	r.Post("/api/v1/incidents/{id}/ack", AcknowledgeIncidentHandler(db))
+	r.Post("/api/v1/incidents/{id}/resolve", ResolveIncidentHandler(db))
 
 	addr := ":" + cfg.Port
 	log.Printf("query-api running on %s", addr)

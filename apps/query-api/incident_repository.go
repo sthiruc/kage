@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -145,4 +146,46 @@ func GetIncidentByID(db *pgx.Conn, id string) (*Incident, error) {
 	}
 
 	return &incident, nil
+}
+
+func AcknowledgeIncident(db *pgx.Conn, id string) error {
+	query := `
+		UPDATE incidents
+		SET status = 'acknowledged'
+		WHERE id = $1
+		  AND status = 'open'
+	`
+
+	commandTag, err := db.Exec(context.Background(), query, id)
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
+}
+
+func ResolveIncident(db *pgx.Conn, id string) error {
+	query := `
+		UPDATE incidents
+		SET
+			status = 'resolved',
+			resolved_at = $2
+		WHERE id = $1
+		  AND status IN ('open', 'acknowledged')
+	`
+
+	commandTag, err := db.Exec(context.Background(), query, id, time.Now().UTC())
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+
+	return nil
 }

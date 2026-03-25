@@ -51,7 +51,7 @@
     *	Async processing (non-blocking ingestion)  
 
 ## Log Querying  
-    *	Filter by:  
+### Filter by:  
     *	service_name  
     *	level  
     *	time range  
